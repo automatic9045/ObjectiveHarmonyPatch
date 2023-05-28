@@ -13,7 +13,7 @@ namespace ObjectiveHarmonyPatch
     /// </summary>
     public class PatchInvokationResult
     {
-        /// <summa\ry>
+        /// <summary>
         /// パッチ先のオリジナルメソッドの戻り値を上書きするかどうかを取得します。
         /// </summary>
         public bool ChangeReturnValue { get; }
