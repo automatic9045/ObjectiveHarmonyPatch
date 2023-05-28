@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata>
+		<id>ObjectiveHarmonyPatch</id>
+		<version>1.0.0</version>
+		<description>Harmony (https://github.com/pardeike/Harmony) のパッチをオブジェクティブに管理できるようにします。</description>
+		<authors>automatic9045</authors>
+
+		<projectUrl>https://github.com/automatic9045/ObjectiveHarmonyPatch</projectUrl>
+		<license type="expression">MIT</license>
+		<copyright>Copyright © 2022 automatic9045</copyright>
+		<tags>Harmony</tags>
+		<repository type="git" url="https://github.com/automatic9045/ObjectiveHarmonyPatch.git" />
+		<title>ObjectiveHarmonyPatch</title>
+
+		<dependencies>
+			<dependency id="Lib.Harmony" version="2.2.2" />
+		</dependencies>
+		<references>
+			<reference file="ObjectiveHarmonyPatch.dll" />
+		</references>
+	</metadata>
+	<files>
+		<file src="bin\Release\ObjectiveHarmonyPatch.dll" target="lib" />
+		<file src="bin\Release\ObjectiveHarmonyPatch.xml" target="lib" />
+	</files>
+</package>
