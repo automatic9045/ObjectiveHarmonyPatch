@@ -130,13 +130,17 @@ namespace ObjectiveHarmonyPatch
         private static bool InvokePatches(object __instance, ref object __result, object[] __args, MethodBase __originalMethod, bool __runOriginal,
             Func<HarmonyPatchHost, List<HarmonyPatch>> patchTypeSelector)
         {
-            bool skipOriginal = false;
+            if (!PatchHosts.TryGetValue(__originalMethod, out HarmonyPatchHost patchHost))
+            {
+                // Harmony の不具合疑い: Harmony.HasAnyPatches が false を返すにも関わらず、このメソッドが呼び出されることがある
+                // 回避のため、解放後に呼び出された場合はスキップする
+                return __runOriginal;
+            }
 
-            PatchInvokedEventArgs args;
-            HarmonyPatchHost patchHost = PatchHosts[__originalMethod];
+            bool skipOriginal = false;
             foreach (HarmonyPatch patch in patchTypeSelector(patchHost))
             {
-                args = new PatchInvokedEventArgs(__instance, __result, __args, __runOriginal, skipOriginal);
+                PatchInvokedEventArgs args = new PatchInvokedEventArgs(__instance, __result, __args, __runOriginal, skipOriginal);
 
                 PatchInvokationResult result = patch.Invoke(patch, args);
                 if (result is null) continue;
