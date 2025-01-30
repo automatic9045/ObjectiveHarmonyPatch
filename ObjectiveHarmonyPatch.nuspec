@@ -14,7 +14,7 @@
 		<title>ObjectiveHarmonyPatch</title>
 
 		<dependencies>
-			<dependency id="Lib.Harmony" version="2.2.2" />
+			<dependency id="Lib.Harmony" version="2.3.3" />
 		</dependencies>
 		<references>
 			<reference file="ObjectiveHarmonyPatch.dll" />
