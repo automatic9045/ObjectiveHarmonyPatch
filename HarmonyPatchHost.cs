@@ -13,12 +13,13 @@ namespace ObjectiveHarmonyPatch
     {
         private static readonly Harmony Harmony = new Harmony("com.objective-harmony-patch");
         private static readonly Dictionary<MethodBase, HarmonyPatchHost> PatchHosts = new Dictionary<MethodBase, HarmonyPatchHost>();
+        private static readonly List<HarmonyPatchHost> DisposeRequestedHosts = new List<HarmonyPatchHost>();
 
         private readonly MethodBase Original;
         private readonly List<HarmonyPatch> Prefix = new List<HarmonyPatch>();
         private readonly List<HarmonyPatch> Postfix = new List<HarmonyPatch>();
 
-        private bool IsEmpty => Prefix.Count == 0 && Postfix.Count == 0;
+        private bool IsEmptyOrAllNull => (Prefix.Count == 0 || Prefix.TrueForAll(x => x is null)) && (Postfix.Count == 0 || Postfix.TrueForAll(x => x is null));
 
         private HarmonyPatchHost(MethodBase original)
         {
@@ -80,9 +81,10 @@ namespace ObjectiveHarmonyPatch
             if (!PatchHosts.TryGetValue(patch.Original, out HarmonyPatchHost patchHost)) throw new KeyNotFoundException();
 
             List<HarmonyPatch> patches = targetSelector(patchHost);
-            patches.Remove(patch);
+            int index = patches.IndexOf(patch);
+            patches[index] = null;
 
-            if (patchHost.IsEmpty) patchHost.Dispose();
+            if (patchHost.IsEmptyOrAllNull) DisposeRequestedHosts.Add(patchHost);
         }
 
         public static void UnpatchPrefix(HarmonyPatch patch) => Unpatch(patch, patchHost => patchHost.Prefix);
@@ -137,11 +139,13 @@ namespace ObjectiveHarmonyPatch
                 return __runOriginal;
             }
 
+            List<HarmonyPatch> patches = patchTypeSelector(patchHost);
             bool skipOriginal = false;
-            foreach (HarmonyPatch patch in patchTypeSelector(patchHost))
+            for (int i = 0; i < patches.Count; i++)
             {
                 PatchInvokedEventArgs args = new PatchInvokedEventArgs(__instance, __result, __args, __runOriginal, skipOriginal);
 
+                HarmonyPatch patch = patches[i];
                 PatchInvokationResult result = patch.Invoke(patch, args);
                 if (result is null) continue;
 
@@ -150,6 +154,12 @@ namespace ObjectiveHarmonyPatch
 
                 if (result.SkipModes.HasFlag(SkipModes.SkipPatches)) break;
             }
+
+            foreach (HarmonyPatchHost patchHostToDispose in DisposeRequestedHosts)
+            {
+                patchHostToDispose.Dispose();
+            }
+            DisposeRequestedHosts.Clear();
 
             return !skipOriginal;
         }
